@@ -8,6 +8,7 @@
 
 import XCTest
 import Dispatch
+import Foundation
 @testable import TaskQueue
 
 
@@ -44,7 +45,7 @@ class TaskQueueTests: XCTestCase {
             XCTAssertEqual(2, id)
             expect2.fulfill()
         }
-        waitForExpectations(timeout: 1)
+        waitForExpectations(timeout: 10)
     }
 
 

@@ -65,8 +65,8 @@
 		A1B4E5BB1E9EA2AD008B5969 = {
 			isa = PBXGroup;
 			children = (
-				A1B4E5DA1EA0DE67008B5969 /* TaskQueue */,
-				A1B4E5E51EA0DE67008B5969 /* TaskQueueTests */,
+				A1B4E5DA1EA0DE67008B5969 /* Sources */,
+				A1B4E5E51EA0DE67008B5969 /* Tests */,
 				A1B4E5C51E9EA2AD008B5969 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -80,22 +80,22 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A1B4E5DA1EA0DE67008B5969 /* TaskQueue */ = {
+		A1B4E5DA1EA0DE67008B5969 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				A1B4E5CE1E9EA34C008B5969 /* TaskQueue.swift */,
 				A1B4E5DC1EA0DE67008B5969 /* Info.plist */,
 			);
-			path = TaskQueue;
+			path = Sources;
 			sourceTree = "<group>";
 		};
-		A1B4E5E51EA0DE67008B5969 /* TaskQueueTests */ = {
+		A1B4E5E51EA0DE67008B5969 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				A1B4E5E61EA0DE67008B5969 /* TaskQueueTests.swift */,
 				A1B4E5E81EA0DE67008B5969 /* Info.plist */,
 			);
-			path = TaskQueueTests;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -345,7 +345,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = TaskQueue/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ag.com.TaskQueue;
@@ -370,7 +370,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = TaskQueue/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ag.com.TaskQueue;
@@ -389,7 +389,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = XA5RXB77R9;
-				INFOPLIST_FILE = TaskQueueTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ag.com.TaskQueueTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -404,7 +404,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = XA5RXB77R9;
-				INFOPLIST_FILE = TaskQueueTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = ag.com.TaskQueueTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
