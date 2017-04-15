@@ -2,10 +2,11 @@
 
 [![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Swift 3.0](https://img.shields.io/badge/Swift-3.0-orange.svg?style=flat)](https://developer.apple.com/swift/) ![Platforms MacOS | iOS | tvOS | watchOS](https://img.shields.io/badge/Platforms-OS%20X%20%7C%20iOS%20%7C%20tvOS%20%7C%20watchOS-brightgreen.svg) [![Carthage Compatible](https://img.shields.io/badge/Carthage-Compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
-A `TaskQueue` is basically a FIFO queue where _tasks_ can be enqueued for execution. The tasks will be executed concurrently up to an allowed maximum number.
+A `TaskQueue` is basically a FIFO queue where _tasks_ can be enqueued for execution.
+The tasks will be executed concurrently up to an allowed maximum number.
 
-A _task_ is simply a non-throwing asynchronous function with a single parameter which is a completion handler called when the task finished.
-
+A _task_ is simply a non-throwing asynchronous function with a single parameter
+which is a completion handler called when the task finished.
 
 ## Features
  - Employs the execution of asynchronous "non-blocking" tasks.
@@ -18,23 +19,56 @@ A _task_ is simply a non-throwing asynchronous function with a single parameter 
 
 ----------------------------------------
 
+## Description
+
+With a _TaskQueue_ you can control the maximum number of concurrent tasks that run
+"within" the task queue. In order to accomplish this, you _enqueue_  tasks into
+the task queue. If the actual number of running tasks is less than the maximum,
+the enqueued task will be immediately executed. Otherwise it will be delayed up
+until enough previously enqueued tasks have been completed.
+
+At any time, you can enqueue further tasks, while the maximum number of running
+tasks is continuously guaranteed. Furthermore, at any time, you can change the
+number of maximum concurrent tasks and the task queue will adapt until the constraints
+are fulfilled.
+
+
 
 ## Usage
 
-First, you need a _task_, that is a function, which executes asynchronously and
-which returns its result via a completion handler. You can use any type of
-"Result", for example a tuple `(Value?, Error?)` or more handy types like
-`Result<T>` or `Try<T>`. It is assumed, that the task function executes some
-operation on a worker thread which calls the completion handler when it completes.
+The typical usage scenario is as follows:
+
+What we have is one or more asynchronous _tasks_ which  are generate elsewhere in
+your code and you want to execute them in some controlled manner. In particular,
+you want to make guarantees that no more than a set limit of those tasks execute
+concurrently. For example, many times, you just want to ensure, that only one
+task is running at a time.
+
+Furthermore, you want to be notified when _all_  tasks of a certain set have been
+completed and then take further actions, for example, based on the results,
+enqueue further tasks.
+
+**So, what's a _task_ anyway?**
+
+A _task_ is a Swift function or closure, which executes _asynchronously_ returns
+`Void` and has a _single_ parameter, the completion handler. The completion handler
+has a single parameter where the eventual `Result` - which is computed by the
+underlying operation - will be passed when the task completes.
+
+You can use any type of "Result", for example a tuple `(Value?, Error?)` or more
+handy types like `Result<T>` or `Try<T>`.
+
+**Canonical task function:**
 
 ```Swift
-func myTask(completion: (String?, Error?)->()) {
+func task(completion: @escaping (R)->()) {
     ...
 }
 ```
+where `R` is for example: `(T?, Error?)` or `Result<T>` or `(Data?, Response?, Error?)` etc.
 
- Now, create a task queue where you can _enqueue_ a number of those tasks. You
- can control the number of maximum concurrently executing tasks in the initializer:
+Now, create a task queue where you can _enqueue_ a number of those tasks. You
+can control the number of maximum concurrently executing tasks in the initializer:
 
 ```Swift
  let taskQueue = TaskQueue(maxConcurrentTasks: 1)
@@ -45,6 +79,7 @@ func myTask(completion: (String?, Error?)->()) {
    }   
  }
 ```
+
 Note, that the start of a task will be delayed up until the current number of
 running tasks is below the allowed maximum number of concurrent tasks.
 
@@ -93,10 +128,10 @@ taskQueue.enqueue(task: myTask, queue: DispatchQueue.main) { Result<String> in
 }
 ```
 
-Note, that this affects only where the task will be _started_. The completion handler
-will be executed on whatever thread or dispatch queue the task is choosing when it
-completes. There's no way in `TaskQueue` to specify the execution context for the
-completion handler.
+Note, that this affects only where the task will be _started_. The task's completion
+handler will be executed on whatever thread or dispatch queue the task is choosing
+when it completes. There's no way in `TaskQueue` to specify the execution context
+for the completion handler.
 
 
 ### Constructing a Suitable Task Function from Any Other Asynchronous Function
@@ -122,17 +157,17 @@ object.
 
 In order to use this function with `TaskQueue`, we need to ensure that the task is
 configured at the time we enqueue it, and that it has the right signature. We can
-accomplish this both by applying _currying_ to the given function.
+accomplish both requirements by applying _currying_ to the given function.
 
 The basic steps are as follows:
 
 Given any asynchronous function with one or more additional parameters and possibly
 a return value:
+
 ```Swift
 func asyncFoo(param: T, completion: @escaping (Result)->()) -> U {
   ...
 }
-
 ```
 
 we transform it to:
@@ -147,6 +182,7 @@ func task(param: T) -> (_ completion: @escaping (Result) -> ()) -> () {
   }
 }
 ```
+
 That is, we transform the above function `asyncFoo` into another, whose parameters
 consist only of the configuring parameters, and returning a _function_ having the
 single remaining parameter, the completion handler, e.g. `((Result) -> ()) -> ()`.
