@@ -234,3 +234,17 @@ taskQueue.enqueue(task: get(url)) { data, response, error in
     ...
 }
 ```
+
+Having a list of urls, enqueue them all at once and execute them with the
+constraints set in the task queue:
+
+```Swift
+let urls = [ ... ]
+let taskQueue = TaskQueue(maxConcurrentTasks: 1) // serialize the tasks
+urls.forEach {
+  taskQueue.enqueue(task: get($0)) { data, response, error in
+      // handle (data, response, error)
+      ...
+  }  
+}
+```
