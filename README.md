@@ -1,29 +1,40 @@
 # TaskQueue
 
-A `TaskQueue` is basically a FIFO queue where _tasks_ can be enqueued for execution. The
- tasks will be executed concurrently up to an allowed maximum number.
+[![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Swift 3.0](https://img.shields.io/badge/Swift-3.0-orange.svg?style=flat)](https://developer.apple.com/swift/) ![Platforms MacOS | iOS | tvOS | watchOS](https://img.shields.io/badge/Platforms-OS%20X%20%7C%20iOS%20%7C%20tvOS%20%7C%20watchOS-brightgreen.svg) [![Carthage Compatible](https://img.shields.io/badge/Carthage-Compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
+A `TaskQueue` is basically a FIFO queue where _tasks_ can be enqueued for execution. The tasks will be executed concurrently up to an allowed maximum number.
 
 A _task_ is simply a non-throwing asynchronous function with a single parameter which is a completion handler called when the task finished.
 
 
 ## Features
  - Employs the execution of asynchronous "non-blocking" tasks.
- - The maximum number of concurrently executing tasks can be set, even during the execution of tasks.
- - Employs a "barrier" task which serves as a synchronization point which allows you to "join" all previous enqueued tasks.
- - Task and TaskQueue can be a used as a replacement for `NSOperation` and `NSOperationQueue`.
+ - The maximum number of concurrently executing tasks can be set, even during
+  the execution of tasks.
+ - Employs a "barrier" task which serves as a synchronization point which allows
+  you to "join" all previous enqueued tasks.
+ - Task and TaskQueue can be a used as a replacement for `NSOperation` and
+  `NSOperationQueue`.
+
+----------------------------------------
 
 
 ## Usage
 
-First, you need a _task_, that is a function, which executes asynchronously and which returns its result via a completion handler. You can use any type of "Result", for example a tuple `(Value?, Error?)` or more handy types like `Result<T>` or `Try<T>`. It is assumed, that the task function executes some operation on a worker thread which calls the completion handler when it completes.
+First, you need a _task_, that is a function, which executes asynchronously and
+which returns its result via a completion handler. You can use any type of
+"Result", for example a tuple `(Value?, Error?)` or more handy types like
+`Result<T>` or `Try<T>`. It is assumed, that the task function executes some
+operation on a worker thread which calls the completion handler when it completes.
 
- ```Swift
- func myTask(completion: (String?, Error?)->()) {
-   ...
- }
- ```
+```Swift
+func myTask(completion: (String?, Error?)->()) {
+    ...
+}
+```
 
- Now, create a task queue where you can _enqueue_ a number of those tasks. You can control the number of maximum concurrently executing tasks in the initializer:
+ Now, create a task queue where you can _enqueue_ a number of those tasks. You
+ can control the number of maximum concurrently executing tasks in the initializer:
 
 ```Swift
  let taskQueue = TaskQueue(maxConcurrentTasks: 1)
@@ -34,10 +45,11 @@ First, you need a _task_, that is a function, which executes asynchronously and 
    }   
  }
 ```
-Note, that the start of a task will be delayed up until the current number of running tasks is below
- the allowed maximum number of concurrent tasks.
+Note, that the start of a task will be delayed up until the current number of
+running tasks is below the allowed maximum number of concurrent tasks.
 
-In the above code, the asynchronous tasks are effectively serialized, since the maximum number of concurrent tasks is set to `1`.
+In the above code, the asynchronous tasks are effectively serialized, since the
+maximum number of concurrent tasks is set to `1`.
 
 
 ### Using a barrier
@@ -76,9 +88,9 @@ started by the task queue, if there should be such a limitation.
 If a queue is not specified, the task will be started on the global queue (`DispatchQueue.global()`).
 
 ```Swift
- taskQueue.enqueue(task: myTask, queue: DispatchQueue.main) { Result<String> in
+taskQueue.enqueue(task: myTask, queue: DispatchQueue.main) { Result<String> in
     ...
- }
+}
 ```
 
 Note, that this affects only where the task will be _started_. The completion handler
@@ -99,7 +111,9 @@ has additional parameters and even returns a result?
 
 Take a look at this asynchronous function from `URLSession`:
 ```Swift
-dataTask(with url: URL, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void) -> URLSessionDataTask
+dataTask(with url: URL,
+  completionHandler: @escaping (Data?, URLResponse?, Error?) -> Swift.Void)
+  -> URLSessionDataTask
 ```
 
 Here, besides the completion handler we have an additional parameter `url` which
