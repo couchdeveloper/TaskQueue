@@ -16,8 +16,5 @@ xcode_sdk:
 
 script:
 - xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk iphonesimulator run-tests
-- xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk iphonesimulator9.0 run-tests
 - xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk macosx run-tests
-- xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk macosx10.10 run-tests
 - xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk appletvsimulator run-tests
-- xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk appletvsimulator10.0 run-tests
