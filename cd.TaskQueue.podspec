@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'cd.TaskQueue'
-  spec.version = '0.2.0'
+  spec.version = '0.3.0'
   spec.summary = 'A TaskQueue controls the execution of asynchronous functions.'
   spec.license = 'Apache License, Version 2.0'
   spec.homepage = 'https://github.com/couchdeveloper/TaskQueue'
