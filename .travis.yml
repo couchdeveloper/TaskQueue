@@ -13,11 +13,9 @@ xcode_sdk:
   - iphonesimulator9.0
   - appletvsimulator
 
-before_install:
-  - brew update
-  - brew outdated xctool || brew upgrade xctool
-
 script:
-- xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk iphonesimulator run-tests
-- xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk macosx run-tests
-- xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk appletvsimulator run-tests
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'arch=x86_64' | xcpretty
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 6' | xcpretty
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 6,OS=9.3' | xcpretty
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=tvOS Simulator,name=Apple TV 1080p' | xcpretty
+- xcrun xcodebuild build -quiet -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=watchOS Simulator,name=Apple Watch - 38mm' | xcpretty
