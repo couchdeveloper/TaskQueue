@@ -1,9 +1,5 @@
 language: objective-c
 
-branches:
- only:
- - master
-
 xcode_project: TaskQueue.xcodeproj
 xcode_scheme: TaskQueue
 osx_image: xcode8.3
