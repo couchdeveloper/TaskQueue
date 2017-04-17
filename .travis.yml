@@ -1,0 +1,21 @@
+language: objective-c
+
+branches:
+ only:
+ - master
+
+xcode_project: TaskQueue.xcodeproj
+xcode_scheme: TaskQueue
+osx_image: xcode8.3
+xcode_sdk:
+  - macosx
+  - iphonesimulator
+  - iphonesimulator9.0
+  - appletvsimulator
+
+script:
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'arch=x86_64' | xcpretty
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 6' | xcpretty
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 6,OS=9.3' | xcpretty
+- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=tvOS Simulator,name=Apple TV 1080p' | xcpretty
+- xcrun xcodebuild build -quiet -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=watchOS Simulator,name=Apple Watch - 38mm' | xcpretty
