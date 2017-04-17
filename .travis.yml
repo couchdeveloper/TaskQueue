@@ -13,6 +13,9 @@ xcode_sdk:
   - iphonesimulator9.0
   - appletvsimulator
 
+before_install:
+  - brew update
+  - brew outdated xctool || brew upgrade xctool
 
 script:
 - xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk iphonesimulator run-tests
