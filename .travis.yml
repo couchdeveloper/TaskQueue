@@ -18,6 +18,6 @@ before_install:
   - brew outdated xctool || brew upgrade xctool
 
 script:
-- xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk iphonesimulator run-tests
-- xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk macosx run-tests
-- xcrun xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk appletvsimulator run-tests
+- xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk iphonesimulator run-tests
+- xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk macosx run-tests
+- xctool -project TaskQueue.xcodeproj -scheme TaskQueue -sdk appletvsimulator run-tests
