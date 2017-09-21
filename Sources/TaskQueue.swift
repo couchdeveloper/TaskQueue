@@ -106,7 +106,7 @@ public class TaskQueue {
     ///   - f: The barrier function.
     public final func enqueueBarrier(queue q: DispatchQueue = DispatchQueue.global(), f: @escaping ()->()) {
         //print("enqueue barrier")
-        func barrier(completion: ()->()) {
+        func barrier(_ completion: ()->()) {
             //print("barrier wait for exclusive execution: number of running tasks: \(self._concurrentTasks - 1)")
             self._queue.suspend()
             self._group.notify(queue: q) {
