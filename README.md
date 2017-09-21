@@ -1,6 +1,6 @@
 # TaskQueue
 
-[![Build Status](https://travis-ci.org/couchdeveloper/TaskQueue.svg?branch=master)](https://travis-ci.org/couchdeveloper/TaskQueue) [![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Swift 3.0](https://img.shields.io/badge/Swift-3.0-orange.svg?style=flat)](https://developer.apple.com/swift/) ![Platforms MacOS | iOS | tvOS | watchOS](https://img.shields.io/badge/Platforms-OS%20X%20%7C%20iOS%20%7C%20tvOS%20%7C%20watchOS-brightgreen.svg) [![Carthage Compatible](https://img.shields.io/badge/Carthage-Compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) [![CocoaPods](https://img.shields.io/badge/CocoaPods-available-370301.svg)](https://cocoapods.org/?q=cdTaskQueue)
+[![Build Status](https://travis-ci.org/couchdeveloper/TaskQueue.svg?branch=master)](https://travis-ci.org/couchdeveloper/TaskQueue) [![GitHub license](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0) [![Swift 3.2](https://img.shields.io/badge/Swift-3.2-orange.svg?style=flat)](https://developer.apple.com/swift/) ![Platforms MacOS | iOS | tvOS | watchOS](https://img.shields.io/badge/Platforms-OS%20X%20%7C%20iOS%20%7C%20tvOS%20%7C%20watchOS-brightgreen.svg) [![Carthage Compatible](https://img.shields.io/badge/Carthage-Compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) [![CocoaPods](https://img.shields.io/badge/CocoaPods-available-370301.svg)](https://cocoapods.org/?q=cdTaskQueue)
 
 A `TaskQueue` is basically a FIFO queue where _tasks_ can be enqueued for execution. The tasks will be executed concurrently up to an allowed maximum number.
 
@@ -10,7 +10,7 @@ which is a completion handler called when the task finished.
 ## Features
  - Employs the execution of asynchronous "non-blocking" tasks.
  - The maximum number of concurrently executing tasks can be set, even during  the execution of tasks.
- - Employs a "barrier" task which serves as a synchronization point which allows
+ - Employs a "barrier" task which serves as a synchronisation point which allows
   you to "join" all previous enqueued tasks.
  - Task and TaskQueue can be a used as a replacement for `NSOperation` and
   `NSOperationQueue`.
