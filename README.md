@@ -93,8 +93,22 @@ func task(completion: @escaping (R)->()) {
 ```
 where `R` is for example: `(T?, Error?)` or `Result<T>` or `(Data?, Response?, Error?)` etc.
 
+Note, that the type `R` may represent a _Swift Tuple_, for example `(T?, Error?)`, and please not that there are syntax changes in Swift 4:
+
+> Caution: In Swift 4 please consider the following changes:    
+If a function type has only one parameter and that parameter’s type is a tuple type, then the tuple type must be parenthesized when writing the function’s type. For example, ((Int, Int)) -> Void is the type of a function that takes a single parameter of the tuple type (Int, Int) and doesn’t return any value. In contrast, without parentheses, (Int, Int) -> Void is the type of a function that takes two Int parameters and doesn’t return any value. Likewise, because Void is a type alias for (), the function type (Void) -> Void is the same as (()) -> ()—a function that takes a single argument that is an empty tuple. These types are not the same as () -> ()—a function that takes no arguments.
+
+So, this means, if the result type is a Swift Tuple `(String?, Error?)` for example, that task needs to be written as follows:
+
+```Swift
+func myTask(completion: @escaping ((String?, Error?))->()) {
+    ...
+}
+```
+
+
 Now, create a task queue where we can _enqueue_ a number of those tasks. We
-can control the number of maximum concurrently executing tasks in the initializer:
+can control the number of maximum concurrently executing tasks in the initialiser:
 
 ```Swift
  let taskQueue = TaskQueue(maxConcurrentTasks: 1)
@@ -106,16 +120,17 @@ can control the number of maximum concurrently executing tasks in the initialize
  }
 ```
 
+
 Note, that the start of a task will be delayed up until the current number of
 running tasks is below the allowed maximum number of concurrent tasks.
 
-In the above code, the asynchronous tasks are effectively serialized, since the
+In the above code, the asynchronous tasks are effectively serialised, since the
 maximum number of concurrent tasks is set to `1`.
 
 
 ### Using a barrier
 
-A _barrier function_ allows us to create a synchronization point within the `TaskQueue`. When the `TaskQueue` encounters a barrier function, it delays the execution of the barrier function and any further tasks until all tasks enqueued before the barrier have been completed. At that point, the barrier function executes exclusively. Upon completion, the `TaskQueue` resumes its normal execution behavior.
+A _barrier function_ allows us to create a synchronisation point within the `TaskQueue`. When the `TaskQueue` encounters a barrier function, it delays the execution of the barrier function and any further tasks until all tasks enqueued before the barrier have been completed. At that point, the barrier function executes exclusively. Upon completion, the `TaskQueue` resumes its normal execution behaviour.
 
 ```Swift
  let taskQueue = TaskQueue(maxConcurrentTasks: 4)
@@ -232,7 +247,7 @@ queue is ready to execute it.
 Here, we wrap a `URLSessionTask` executing a "GET" into a _task_ function:
 
 ```Swift
-func get(_ url: URL) -> (_ completion: @escaping (Data?, URLResponse?, Error?) -> ()) -> () {
+func get(_ url: URL) -> (_ completion: @escaping ((Data?, URLResponse?, Error?)) -> ()) -> () {
     return { completion in
         URLSession.shared.dataTask(with: url) { data, response, error in
             completion(data, response, error)
@@ -244,7 +259,7 @@ Then use it as follows:
 
 ```Swift
 let taskQueue = TaskQueue(maxConcurrentTasks: 4)
-taskQueue.enqueue(task: get(url)) { data, response, error in
+taskQueue.enqueue(task: get(url)) { (data, response, error) in
     // handle (data, response, error)
     ...
 }
@@ -255,9 +270,9 @@ constraints set in the task queue:
 
 ```Swift
 let urls = [ ... ]
-let taskQueue = TaskQueue(maxConcurrentTasks: 1) // serialize the tasks
+let taskQueue = TaskQueue(maxConcurrentTasks: 1) // serialise the tasks
 urls.forEach {
-  taskQueue.enqueue(task: get($0)) { data, response, error in
+  taskQueue.enqueue(task: get($0)) { (data, response, error) in
       // handle (data, response, error)
       ...
   }  
