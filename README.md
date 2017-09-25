@@ -250,7 +250,7 @@ Here, we wrap a `URLSessionTask` executing a "GET" into a _task_ function:
 func get(_ url: URL) -> (_ completion: @escaping ((Data?, URLResponse?, Error?)) -> ()) -> () {
     return { completion in
         URLSession.shared.dataTask(with: url) { data, response, error in
-            completion(data, response, error)
+            completion((data, response, error))
         }.resume()
     }
 }
