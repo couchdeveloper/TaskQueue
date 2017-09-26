@@ -26,7 +26,7 @@ import Dispatch
  union (aka Enum) which contains either a value or an error.
 */
 public class TaskQueue {
-
+    
     private let _queue: DispatchQueue
     private var _maxConcurrentTasks: UInt = 1
     private var _concurrentTasks: UInt = 0
@@ -64,6 +64,18 @@ public class TaskQueue {
             }
         }
     }
+
+
+//    public final func enqueue(task: @escaping (@escaping ()->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping ()->()) {
+//        //print("enqueue task")
+//        self._queue.async {
+//            //print("start task")
+//            self.execute(task: { c in q.async {task(c)} } ) { () in
+//                //print("complete task")
+//                completion()
+//            }
+//        }
+//    }
 
 
     /// Executes the given task and returns immediately.
@@ -106,7 +118,7 @@ public class TaskQueue {
     ///   - f: The barrier function.
     public final func enqueueBarrier(queue q: DispatchQueue = DispatchQueue.global(), f: @escaping ()->()) {
         //print("enqueue barrier")
-        func barrier(_ completion: ()->()) {
+        func barrier(_ completion: (())->()) {
             //print("barrier wait for exclusive execution: number of running tasks: \(self._concurrentTasks - 1)")
             self._queue.suspend()
             self._group.notify(queue: q) {
@@ -117,7 +129,7 @@ public class TaskQueue {
                     self._queue.resume()
                 }
             }
-            completion()
+            completion(())
         }
         self._queue.async {
             //print("start barrier")
