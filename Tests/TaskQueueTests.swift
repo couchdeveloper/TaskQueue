@@ -12,7 +12,14 @@ import Foundation
 @testable import TaskQueue
 
 
-func task(id: Int, delay: Double = 1.0) -> (_ completion: @escaping (Int) -> ()) -> () {
+fileprivate func async(id: Int, delay: Double = 0.2, completion: @escaping (_ id: Int?, _ error: Swift.Error?) -> ()) {
+    DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
+        completion(1, nil)
+    }
+}
+
+
+func task(id: Int, delay: Double = 0.5) -> (_ completion: @escaping (Int) -> ()) -> () {
     return { completion in
         DispatchQueue.global().asyncAfter(deadline: .now() + delay) {
             completion(id)
@@ -20,12 +27,13 @@ func task(id: Int, delay: Double = 1.0) -> (_ completion: @escaping (Int) -> ())
     }
 }
 
+
 class TaskQueueTests: XCTestCase {
 
     func testEnqueuedTaskWillComplete1() {
         let taskQueue = TaskQueue()
         let expect = expectation(description: "completed")
-        taskQueue.enqueue(task: task(id: 1)) {id in
+        taskQueue.enqueue(task: async(id:delay:completion:), 1, 0.2) { id, error in
             XCTAssertEqual(1, id)
             expect.fulfill()
         }
