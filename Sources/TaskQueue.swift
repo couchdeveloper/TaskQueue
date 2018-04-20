@@ -45,20 +45,26 @@ public class TaskQueue {
 
     /// Enqueues the given task and returns immediately.
     ///
-    /// The task will be executed when the current number of active tasks is 
+    /// The task's completion handler has the signature: `(Result)->()` where
+    /// `Result` usually is a `Try`, `Either` or `Result` type which is a
+    /// discriminated union representing _either_ the computed value or an error.
+    ///
+    /// The task will be executed when the current number of active tasks is
     /// smaller than `maxConcurrentTasks`.
     /// - Parameters:
     ///   - task: The task which will be enqueued.
-    ///   - queue: The dispatch queue where the task should be started.
+    ///   - queue: The dispatch queue where the task will be started.
     ///   - completion: The completion handler which will be executed when the task completes. It will be executed on whatever execution context the task has been choosen.
     /// - Parameters:
     ///   - result: The task's result.
     /// - Attention: There's no upper limit for the number of enqueued tasks. An enqueued task may reference resources and other objects which will be only released when the task has been completed.
-    public final func enqueue<T>(task: @escaping (@escaping (T)->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping (_ result: T)->()) {
+    public final func enqueue<Result>(task: @escaping (@escaping (Result)->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping (_ result: Result)->()) {
         //print("enqueue task")
         self._queue.async {
             //print("start task")
-            self.execute(task: { c in q.async {task(c)} } ) { result in
+            self.execute(task: { completion in
+                q.async { task(completion) }
+            }) { result in
                 //print("complete task")
                 completion(result)
             }
@@ -66,16 +72,74 @@ public class TaskQueue {
     }
 
 
-//    public final func enqueue(task: @escaping (@escaping ()->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping ()->()) {
-//        //print("enqueue task")
-//        self._queue.async {
-//            //print("start task")
-//            self.execute(task: { c in q.async {task(c)} } ) { () in
-//                //print("complete task")
-//                completion()
-//            }
-//        }
-//    }
+    /// Enqueues the given task and returns immediately.
+    ///
+    /// The task's completion handler has the signature: `(ResArg0, ResArg1)->()` which
+    /// usually are optionals representing the computed value respevtively an error.
+    ///
+    /// The task will be executed when the current number of active tasks is
+    /// smaller than `maxConcurrentTasks`.
+    /// - Parameters:
+    ///   - task: The task which will be enqueued.
+    ///   - queue: The dispatch queue where the task will be started.
+    ///   - completion: The completion handler which will be executed when the task completes. It will be executed on whatever execution context the task has been choosen.
+    /// - Parameters:
+    ///   - arg0: The task result's first argument whose type equals the type parameter `ResArg0`. Usually this is an optional representing the computed value.
+    ///   - arg1: The task result's second argument whose type equals the type parameter `ResArg1`. Usually this is an optional representing an error.
+    /// - Attention: There's no upper limit for the number of enqueued tasks. An enqueued task may reference resources and other objects which will be only released when the task has been completed.
+    public final func enqueue<ResArg0, ResArg1>(task: @escaping (@escaping (ResArg0, ResArg1)->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping (_ arg0: ResArg0, _ arg1: ResArg1)->()) {
+        //print("enqueue task")
+        self._queue.async {
+            //print("start task")
+            func task0(completion: @escaping ((ResArg0, ResArg1))->()) {
+                q.async {
+                    task() { a, b in
+                        completion((a,b))
+                    }
+                }
+            }
+            self.execute(task: task0(completion:)) { result in
+                //print("complete task")
+                completion(result.0, result.1)
+            }
+        }
+    }
+
+
+    /// Enqueues the given task and returns immediately.
+    ///
+    /// The task's completion handler has the signature: `(ResArg0, ResArg1, ResArg2)->()`
+    /// which are usually optionals representing the computed values and an error.
+    ///
+    /// The task will be executed when the current number of active tasks is
+    /// smaller than `maxConcurrentTasks`.
+    /// - Parameters:
+    ///   - task: The task which will be enqueued.
+    ///   - queue: The dispatch queue where the task will be started.
+    ///   - completion: The completion handler which will be executed when the task completes. It will be executed on whatever execution context the task has been choosen.
+    /// - Parameters:
+    ///   - arg0: The task result's first argument whose type equals the type parameter `ResArg0`.
+    ///   - arg1: The task result's second argument whose type equals the type parameter `ResArg1`.
+    ///   - arg2: The task result's third argument whose type equals the type parameter `ResArg2`.
+    /// - Attention: There's no upper limit for the number of enqueued tasks. An enqueued task may reference resources and other objects which will be only released when the task has been completed.
+    public final func enqueue<ResArg0, ResArg1, ResArg2>(task: @escaping (@escaping (ResArg0, ResArg1, ResArg2)->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping (_ arg0: ResArg0, _ arg1: ResArg1, _ arg2: ResArg2)->()) {
+        //print("enqueue task")
+        self._queue.async {
+            //print("start task")
+            func task0(completion: @escaping ((ResArg0, ResArg1, ResArg2))->()) {
+                q.async {
+                    task() { a, b, c in
+                        completion((a,b,c))
+                    }
+                }
+            }
+            self.execute(task: task0(completion:)) { result in
+                //print("complete task")
+                completion(result.0, result.1, result.2)
+            }
+        }
+    }
+
 
 
     /// Executes the given task and returns immediately.
