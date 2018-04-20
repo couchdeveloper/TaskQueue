@@ -8,25 +8,25 @@ import Dispatch
 
 
 /**
- A `TaskQueue` is a FIFO queue where _tasks_ can be enqueued for execution. The 
- tasks will be executed in order up to `maxConcurrentTasks` concurrently. The start 
- of a task will be delayed up until the current number of running tasks is below 
+ A `TaskQueue` is a FIFO queue where _tasks_ can be enqueued for execution. The
+ tasks will be executed in order up to `maxConcurrentTasks` concurrently. The start
+ of a task will be delayed up until the current number of running tasks is below
  the allowed maximum number of concurrent tasks.
- 
+
  When a task completes it will be automatically dequeued and its completion handler
  will be called.
- 
- The allowed maximum number of concurrent tasks can be changed while tasks are 
+
+ The allowed maximum number of concurrent tasks can be changed while tasks are
  executing.
 `
  A _task_ is simply a non-throwing asynchronous function with a single parameter
- `completion` which is a function type. The completion function has a single parameter 
- which desginates the result type of the task. On completion, the task MUST call 
- the completion handler passing the result. Usually, the result type is a discriminated 
+ `completion` which is a function type. The completion function has a single parameter
+ which desginates the result type of the task. On completion, the task MUST call
+ the completion handler passing the result. Usually, the result type is a discriminated
  union (aka Enum) which contains either a value or an error.
 */
 public class TaskQueue {
-    
+
     private let _queue: DispatchQueue
     private var _maxConcurrentTasks: UInt = 1
     private var _concurrentTasks: UInt = 0
@@ -45,7 +45,7 @@ public class TaskQueue {
 
     /// Enqueues the given task and returns immediately.
     ///
-    /// The task will be executed when the current number of active tasks is 
+    /// The task will be executed when the current number of active tasks is
     /// smaller than `maxConcurrentTasks`.
     /// - Parameters:
     ///   - task: The task which will be enqueued.
@@ -55,27 +55,12 @@ public class TaskQueue {
     ///   - result: The task's result.
     /// - Attention: There's no upper limit for the number of enqueued tasks. An enqueued task may reference resources and other objects which will be only released when the task has been completed.
     public final func enqueue<T>(task: @escaping (@escaping (T)->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping (_ result: T)->()) {
-        //print("enqueue task")
         self._queue.async {
-            //print("start task")
             self.execute(task: { c in q.async {task(c)} } ) { result in
-                //print("complete task")
                 completion(result)
             }
         }
     }
-
-
-//    public final func enqueue(task: @escaping (@escaping ()->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping ()->()) {
-//        //print("enqueue task")
-//        self._queue.async {
-//            //print("start task")
-//            self.execute(task: { c in q.async {task(c)} } ) { () in
-//                //print("complete task")
-//                completion()
-//            }
-//        }
-//    }
 
 
     /// Executes the given task and returns immediately.
@@ -108,9 +93,9 @@ public class TaskQueue {
     ///
     /// A barrier function allows you to create a synchronization point within the
     /// `TaskQueue`. When the `TaskQueue` encounters a barrier function, it delays
-    /// the execution of the barrier function and any further tasks until all tasks 
-    /// enqueued before the barrier finish executing. At that point, the barrier 
-    /// function executes exclusively. Upon completion, the `TaskQueue` resumes 
+    /// the execution of the barrier function and any further tasks until all tasks
+    /// enqueued before the barrier finish executing. At that point, the barrier
+    /// function executes exclusively. Upon completion, the `TaskQueue` resumes
     /// its normal execution behavior.
     ///
     /// - Parameters:
@@ -119,20 +104,16 @@ public class TaskQueue {
     public final func enqueueBarrier(queue q: DispatchQueue = DispatchQueue.global(), f: @escaping ()->()) {
         //print("enqueue barrier")
         func barrier(_ completion: (())->()) {
-            //print("barrier wait for exclusive execution: number of running tasks: \(self._concurrentTasks - 1)")
             self._queue.suspend()
             self._group.notify(queue: q) {
-                //print("execute barrier func")
                 f()
                 self._syncQueue.async {
-                    //print("leave barrier")
                     self._queue.resume()
                 }
             }
             completion(())
         }
         self._queue.async {
-            //print("start barrier")
             self.execute(task: barrier, completion: {})
         }
     }
