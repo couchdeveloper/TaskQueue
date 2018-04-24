@@ -136,11 +136,33 @@ public class TaskQueue {
     }
 
 
+    /// Returns the number of tasks currently running.
     public final var countRunningTasks: UInt {
         return _syncQueue.sync {
             return self._concurrentTasks
         }
     }
 
+
+    /// Suspends the invokation of pending tasks.
+    ///
+    /// When suspending a TaskQueue, pending tasks can be temporarily delayed for
+    /// execution. Tasks already running will not be affected.
+    /// Calling this function will increment an internal suspension counter, while
+    /// calling `resume()` will decrement it. While this counter is greater than
+    /// zero the task queue remains suspended.
+    public final func suspend() {
+        self._queue.suspend()
+    }
+
+    /// Resumes the invokation of pending tasks.
+    ///
+    /// Calling this function will decrement an internal suspension counter, while
+    /// calling `suspend()` will increment it. While this counter is greater than
+    /// zero the task queue remains suspended. Only when this counter will become
+    /// zero the task queue will resume its operation and start pending tasks.
+    public final func resume() {
+        self._queue.resume()
+    }
 
 }
