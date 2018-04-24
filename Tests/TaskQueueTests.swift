@@ -177,4 +177,70 @@ class TaskQueueTests: XCTestCase {
         ensureMaxConcurrentTasks(taskQueue: taskQueue, numberTasks: 32, maxConcurrentTasks: 8)
     }
 
+    func testSuspendedTaskQueueDelaysExecutionOfTasks1() {
+        let taskQueue = TaskQueue(maxConcurrentTasks: 1)
+        taskQueue.suspend()
+        let sem = DispatchSemaphore(value: 0)
+        taskQueue.enqueue(task: task(id: 0, delay: 0.1)) { id in
+            sem.signal()
+        }
+        XCTAssertTrue(sem.wait(timeout: .now() + 0.5) == .timedOut)
+        taskQueue.resume()
+        XCTAssertFalse(sem.wait(timeout: .now() + 0.5) == .timedOut)
+    }
+
+    func testSuspendedTaskQueueDelaysExecutionOfTasks2() {
+        let taskQueue = TaskQueue(maxConcurrentTasks: 8)
+        taskQueue.suspend()
+        let sem = DispatchSemaphore(value: 0)
+        for i in 0..<8 {
+            taskQueue.enqueue(task: task(id: i, delay: 0)) { _ in }
+        }
+        taskQueue.enqueueBarrier {
+            sem.signal()
+        }
+        XCTAssertTrue(sem.wait(timeout: .now() + 0.5) == .timedOut)
+        taskQueue.resume()
+        XCTAssertFalse(sem.wait(timeout: .now() + 0.5) == .timedOut)
+    }
+
+    func testSuspendedTaskQueueDelaysExecutionOfTasks3() {
+        let taskQueue = TaskQueue(maxConcurrentTasks: 8)
+        taskQueue.suspend()
+        taskQueue.suspend()
+        taskQueue.suspend()
+        let sem = DispatchSemaphore(value: 0)
+        for i in 0..<8 {
+            taskQueue.enqueue(task: task(id: i, delay: 0)) { _ in }
+        }
+        taskQueue.enqueueBarrier {
+            sem.signal()
+        }
+        XCTAssertTrue(sem.wait(timeout: .now() + 0.5) == .timedOut)
+        taskQueue.resume()
+        XCTAssertTrue(sem.wait(timeout: .now() + 0.5) == .timedOut)
+        taskQueue.resume()
+        XCTAssertTrue(sem.wait(timeout: .now() + 0.5) == .timedOut)
+        taskQueue.resume()
+        XCTAssertFalse(sem.wait(timeout: .now() + 0.5) == .timedOut)
+    }
+
+
+    func testSuspendedTaskQueueDelaysExecutionOfTasks4() {
+        let taskQueue = TaskQueue(maxConcurrentTasks: 8)
+        let sem = DispatchSemaphore(value: 0)
+        taskQueue.enqueueBarrier {
+            taskQueue.suspend()
+        }
+        for i in 0..<8 {
+            taskQueue.enqueue(task: task(id: i, delay: 0)) { _ in }
+        }
+        taskQueue.enqueueBarrier {
+            sem.signal()
+        }
+        XCTAssertTrue(sem.wait(timeout: .now() + 0.5) == .timedOut)
+        taskQueue.resume()
+        XCTAssertFalse(sem.wait(timeout: .now() + 0.5) == .timedOut)
+    }
+
 }
