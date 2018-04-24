@@ -32,14 +32,16 @@ public class TaskQueue {
     private var _concurrentTasks: UInt = 0
     private let _group = DispatchGroup()
     private let _syncQueue = DispatchQueue(label: "task_queue.sync_queue")
+    public private(set) var targetQueue: TaskQueue?
 
 
     /// Designated initializer.
     ///
     /// - Parameter maxConcurrentTasks: The number of tasks which can be executed concurrently.
-    public init(maxConcurrentTasks: UInt = 1) {
+    public init(maxConcurrentTasks: UInt = 1, targetQueue: TaskQueue? = nil) {
         self._queue = DispatchQueue(label: "task_queue.queue", target: _syncQueue)
         _maxConcurrentTasks = maxConcurrentTasks
+        self.targetQueue = targetQueue
     }
 
 
@@ -76,7 +78,7 @@ public class TaskQueue {
             self._queue.suspend()
         }
         self._group.enter()
-        task() { result in
+        let _completion: (T)->() = { result in
             self._syncQueue.async {
                 if self._concurrentTasks == self._maxConcurrentTasks {
                     self._queue.resume()
@@ -85,6 +87,11 @@ public class TaskQueue {
                 self._group.leave()
             }
             completion(result)
+        }
+        if let targetQueue = self.targetQueue {
+            targetQueue.enqueue(task: task, completion: _completion)
+        } else {
+            task(_completion)
         }
     }
 
@@ -166,3 +173,5 @@ public class TaskQueue {
     }
 
 }
+
+
