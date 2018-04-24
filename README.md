@@ -10,10 +10,14 @@ which is a completion handler called when the task finished.
 ## Features
  - Employs the execution of asynchronous "non-blocking" tasks.
  - The maximum number of concurrently executing tasks can be set, even during  the execution of tasks.
- - Employs a "barrier" task which serves as a synchronisation point which allows
-  you to "join" all previous enqueued tasks.
+ - Employs a "barrier" task which serves as a synchronisation point which allows us to "join" all previous enqueued tasks.
+ - A task queue can be suspended and resumed.
+ - A task queue can have a _target_ task queue where tasks which are ready for execution will be enqueued and the target will then become responsible for execution of the task (which again may be actually performed by another target task queue).
  - Task and TaskQueue can be a used as a replacement for `NSOperation` and
   `NSOperationQueue`.
+
+With barriers, suspend and resume functionality, target relationships and the control of the concurrency level allows us to design complex systems where the execution of asynchronous tasks can be controlled by external conditions, interdependencies and by the restrictions of system resources.
+
 
 ----------------------------------------
 
