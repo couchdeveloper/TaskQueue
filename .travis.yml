@@ -6,7 +6,7 @@ branches:
 
 xcode_project: TaskQueue.xcodeproj
 xcode_scheme: TaskQueue
-osx_image: xcode9
+osx_image: xcode10.1
 
 script:
 - xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'arch=x86_64' | xcpretty
