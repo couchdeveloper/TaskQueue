@@ -12,6 +12,7 @@ Pod::Spec.new do |spec|
   spec.tvos.deployment_target = '10.0'
   spec.watchos.deployment_target = '3.0'
 
+  spec.module_name = 'TaskQueue'
   spec.source_files = "Sources/*.swift"
 
   spec.requires_arc = true

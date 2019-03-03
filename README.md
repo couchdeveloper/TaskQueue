@@ -61,8 +61,11 @@ pod 'cdTaskQueue'
 
 In your source files, import the library as follows
 ```Swift
-import cdTaskQueue
+import TaskQueue
 ```
+
+Note that the module name (`TaskQueue`) differs from the Podspec name (`cdTaskQueue`).
+
 
 ### [SwiftPM](https://github.com/apple/swift-package-manager/tree/master/Documentation)
 
