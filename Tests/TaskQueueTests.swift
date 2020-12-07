@@ -9,6 +9,7 @@
 import XCTest
 import Dispatch
 import Foundation
+import os
 @testable import TaskQueue
 
 
@@ -100,7 +101,6 @@ class TaskQueueTests: XCTestCase {
         ensureMaxConcurrentTasks(taskQueue: taskQueue, numberTasks: 24, maxConcurrentTasks: maxConcurrentTasks)
     }
 
-
     func ensureBarrier(maxConcurrentTasks: UInt , before: Int, after: Int) {
         let syncQueue = DispatchQueue(label: "snyc_queue")
         var expectedSequence: [Int] = (0..<before).map { _ in 0} + [1] + (0..<after).map { _ in 2}
@@ -147,26 +147,21 @@ class TaskQueueTests: XCTestCase {
         waitForExpectations(timeout: 10)
     }
 
-
     func testBarrier1() {
         ensureBarrier(maxConcurrentTasks: 1, before: 4, after: 4)
     }
-
 
     func testBarrier2() {
         ensureBarrier(maxConcurrentTasks: 2, before: 8, after: 8)
     }
 
-
     func testBarrier3() {
         ensureBarrier(maxConcurrentTasks: 3, before: 12, after: 12)
     }
 
-
     func testBarrier4() {
         ensureBarrier(maxConcurrentTasks: 4, before: 16, after: 16)
     }
-
 
     func testChangeMaxConcurrentTasks() {
         let taskQueue = TaskQueue(maxConcurrentTasks: 1)
@@ -225,9 +220,8 @@ class TaskQueueTests: XCTestCase {
         XCTAssertFalse(sem.wait(timeout: .now() + 0.5) == .timedOut)
     }
 
-
     func testSuspendedTaskQueueDelaysExecutionOfTasks4() {
-        let taskQueue = TaskQueue(maxConcurrentTasks: 8)
+        let taskQueue = TaskQueue(maxConcurrentTasks: 4)
         let sem = DispatchSemaphore(value: 0)
         taskQueue.enqueueBarrier {
             taskQueue.suspend()
@@ -243,4 +237,44 @@ class TaskQueueTests: XCTestCase {
         XCTAssertFalse(sem.wait(timeout: .now() + 0.5) == .timedOut)
     }
 
+    func testAsyncBarrier() {
+        let completed = expectation(description: "completed")
+        let invocations = expectation(description: "invocations")
+        invocations.expectedFulfillmentCount = 4
+
+        let sem = DispatchSemaphore(value: 1)
+
+        func asyncBarrier(completion: @escaping (Result<Void, Error>) -> Void) {
+            let avail = sem.wait(timeout: .now()) == .success
+            XCTAssert(avail == true)
+            invocations.fulfill()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                sem.signal()
+                completion(.success(Void()))
+            }
+        }
+
+        func task(completion: @escaping (Result<Void, Error>) -> Void) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                completion(.success(Void()))
+            }
+        }
+
+        let taskQueue = TaskQueue(maxConcurrentTasks: 4)
+
+        for _ in 0..<8 {
+            taskQueue.enqueue(task: task(completion:)) { result in
+            }
+        }
+        for _ in 0..<4 {
+            taskQueue.enqueueBarrier(task: asyncBarrier(completion:)) { result in
+            }
+        }
+
+        taskQueue.enqueueBarrier {
+            completed.fulfill()
+        }
+        
+        waitForExpectations(timeout: 1)
+    }
 }
