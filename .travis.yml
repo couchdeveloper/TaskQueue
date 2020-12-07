@@ -1,16 +1,13 @@
-language: objective-c
-
-branches:
- only:
- - master
+language: swift
 
 xcode_project: TaskQueue.xcodeproj
 xcode_scheme: TaskQueue
-osx_image: xcode10.1
+osx_image: xcode12.2
 
 script:
-- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'arch=x86_64' | xcpretty
-- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 6' | xcpretty
-- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 6,OS=9.3' | xcpretty
-- xcrun xcodebuild test -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=tvOS Simulator,name=Apple TV 1080p' | xcpretty
-- xcrun xcodebuild build -quiet -project TaskQueue.xcodeproj -scheme TaskQueue -destination 'platform=watchOS Simulator,name=Apple Watch - 38mm' | xcpretty
+- set -o pipefail
+- xcrun xcodebuild test -workspace TaskQueue.xcworkspace -scheme TaskQueue -destination 'arch=x86_64' | xcpretty
+- xcrun xcodebuild test -workspace TaskQueue.xcworkspace -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 12' | xcpretty
+- xcrun xcodebuild test -workspace TaskQueue.xcworkspace -scheme TaskQueue -destination 'platform=iOS Simulator,name=iPhone 5s,OS=10.3.1' | xcpretty
+- xcrun xcodebuild test -workspace TaskQueue.xcworkspace -scheme TaskQueue -destination 'platform=tvOS Simulator,name=Apple TV' | xcpretty
+- xcrun xcodebuild build -workspace TaskQueue.xcworkspace -scheme Cancellation -destination 'platform=watchOS Simulator,name=Apple Watch - 38mm' | xcpretty
