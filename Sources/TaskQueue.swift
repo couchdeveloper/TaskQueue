@@ -6,6 +6,7 @@
 
 import Dispatch
 
+public let defaultProcessQueue = DispatchQueue(label: "com.TaskQueue.default-process-queue")
 
 /**
  A `TaskQueue` is a FIFO queue where _tasks_ can be enqueued for execution. The
@@ -27,23 +28,20 @@ import Dispatch
 */
 public class TaskQueue {
 
-    private let _queue: DispatchQueue
+    private let taskQueue: DispatchQueue
+    private let group = DispatchGroup()
+    private let mutex = UnfairLock() // DispatchQueue(label: "task_queue.sync_queue")
     private var _maxConcurrentTasks: UInt = 1
     private var _concurrentTasks: UInt = 0
-    private let _group = DispatchGroup()
-    private let _syncQueue = DispatchQueue(label: "task_queue.sync_queue")
-    public private(set) var targetQueue: TaskQueue?
 
-
-    /// Designated initializer.
+    /// Creates and initializes a Task Queue with the given number of maximum allowed concurrent tasks.
     ///
-    /// - Parameter maxConcurrentTasks: The number of tasks which can be executed concurrently.
-    public init(maxConcurrentTasks: UInt = 1, targetQueue: TaskQueue? = nil) {
-        self._queue = DispatchQueue(label: "task_queue.queue", target: _syncQueue)
+    /// - Parameters:
+    ///   - maxConcurrentTasks: The number of tasks which can be executed concurrently.
+    public init(maxConcurrentTasks: UInt = 1) {
+        self.taskQueue = DispatchQueue(label: "com.TaskQueue.queue")
         _maxConcurrentTasks = maxConcurrentTasks
-        self.targetQueue = targetQueue
     }
-
 
     /// Enqueues the given task and returns immediately.
     ///
@@ -56,45 +54,11 @@ public class TaskQueue {
     /// - Parameters:
     ///   - result: The task's result.
     /// - Attention: There's no upper limit for the number of enqueued tasks. An enqueued task may reference resources and other objects which will be only released when the task has been completed.
-    public final func enqueue<T>(task: @escaping (@escaping (T)->())->(), queue q: DispatchQueue = DispatchQueue.global(), completion: @escaping (_ result: T)->()) {
-        self._queue.async {
-            self.execute(task: { c in q.async {task(c)} } ) { result in
-                completion(result)
-            }
+    public final func enqueue<T>(task: @escaping (@escaping (T) -> Void) -> Void, queue: DispatchQueue = defaultProcessQueue, completion: @escaping (_ result: T) -> Void) {
+        self.taskQueue.async {
+            self.execute(task: task, processQueue: queue, completion: completion)
         }
     }
-
-
-    /// Executes the given task and returns immediately.
-    ///
-    /// - Parameters:
-    ///   - task: The task which will be enqueued.
-    ///   - queue: The dispatch queue where the task should be started.
-    ///   - completion: The completion handler that will be executed when the task completes.
-    private final func execute<T>(task: @escaping (@escaping (T)->())->(), completion: @escaping (T)->()) {
-        assert(_concurrentTasks < _maxConcurrentTasks)
-        _concurrentTasks += 1
-        if _concurrentTasks == _maxConcurrentTasks {
-            self._queue.suspend()
-        }
-        self._group.enter()
-        let _completion: (T)->() = { result in
-            self._syncQueue.async {
-                if self._concurrentTasks == self._maxConcurrentTasks {
-                    self._queue.resume()
-                }
-                self._concurrentTasks -= 1
-                self._group.leave()
-            }
-            completion(result)
-        }
-        if let targetQueue = self.targetQueue {
-            targetQueue.enqueue(task: task, completion: _completion)
-        } else {
-            task(_completion)
-        }
-    }
-
 
     /// Enqueues the given function for barrier execution and returns immediately.
     ///
@@ -108,48 +72,58 @@ public class TaskQueue {
     /// - Parameters:
     ///   - queue: The dispatch queue where the barrier should be executed.
     ///   - f: The barrier function.
-    public final func enqueueBarrier(queue q: DispatchQueue = DispatchQueue.global(), f: @escaping ()->()) {
-        //print("enqueue barrier")
-        func barrier(_ completion: (())->()) {
-            self._queue.suspend()
-            self._group.notify(queue: q) {
-                f()
-                self._syncQueue.async {
-                    self._queue.resume()
-                }
-            }
+    public final func enqueueBarrier(queue: DispatchQueue = defaultProcessQueue, f: @escaping () -> Void) {
+        func task(completion: @escaping (()) -> Void) {
+            f()
             completion(())
         }
-        self._queue.async {
-            self.execute(task: barrier, completion: {})
+        self.taskQueue.async {
+            self.execute(task: task, asBarrier: true, processQueue: queue, completion: {})
         }
     }
 
+    /// Enqueues the given task for barrier execution and returns immediately.
+    ///
+    /// A barrier task allows you to create a synchronization point within the
+    /// `TaskQueue`. When the `TaskQueue` encounters a barrier, it delays
+    /// the execution of the barrier task and any further tasks until all tasks
+    /// enqueued before the barrier finish executing. At that point, the barrier
+    /// task executes exclusively. Upon completion, the `TaskQueue` resumes
+    /// its normal execution behavior.
+    ///
+    /// - Parameters:
+    ///   - task: The barrier function.
+    ///   - queue: The dispatch queue where the barrier should be executed.
+    ///   - completion: The completion handler which will be executed when the barrier task
+    ///   completes. It will be executed on whatever execution context the task has been choosen.
+    public final func enqueueBarrier<T>(task: @escaping (@escaping (T) -> Void) -> Void, queue: DispatchQueue = defaultProcessQueue, completion: @escaping (_ result: T) -> Void) {
+        self.taskQueue.async {
+            self.execute(task: task, asBarrier: true, processQueue: queue, completion: completion)
+        }
+    }
 
     /// Sets or returns the number of concurrently executing tasks.
     public final var maxConcurrentTasks: UInt {
         get {
-            var result: UInt = 0
-            _syncQueue.sync {
-                result = self._maxConcurrentTasks
+            return self.mutex.locked {
+                _maxConcurrentTasks
             }
-            return result
         }
         set (value) {
-            _syncQueue.async {
-                self._maxConcurrentTasks = value
+            self.mutex.locked {
+                let distance = Int(value) - Int(_maxConcurrentTasks)
+                _maxConcurrentTasks = value
+                resumeOrSuspendIfNeeded(distance: distance)
             }
         }
     }
-
 
     /// Returns the number of tasks currently running.
     public final var countRunningTasks: UInt {
-        return _syncQueue.sync {
-            return self._concurrentTasks
+        return self.mutex.locked {
+            self._concurrentTasks
         }
     }
-
 
     /// Suspends the invokation of pending tasks.
     ///
@@ -159,7 +133,7 @@ public class TaskQueue {
     /// calling `resume()` will decrement it. While this counter is greater than
     /// zero the task queue remains suspended.
     public final func suspend() {
-        self._queue.suspend()
+        self.taskQueue.suspend()
     }
 
     /// Resumes the invokation of pending tasks.
@@ -169,9 +143,72 @@ public class TaskQueue {
     /// zero the task queue remains suspended. Only when this counter will become
     /// zero the task queue will resume its operation and start pending tasks.
     public final func resume() {
-        self._queue.resume()
+        self.taskQueue.resume()
+    }
+
+    /// Starts the asynchronous task and returns immediately.
+    ///
+    /// - Parameters:
+    ///   - task: The task which will be executed.
+    ///   - processQueue: The dispatch queue where the task should be started.
+    ///   - completion: The completion handler that will be executed when the task completes.
+    private final func execute<T>(task: @escaping (@escaping (T) -> Void) -> Void, asBarrier: Bool = false, processQueue: DispatchQueue, completion: @escaping (T) -> Void) {
+        dispatchPrecondition(condition: .onQueue(self.taskQueue))
+        assert(_concurrentTasks < _maxConcurrentTasks)
+
+        func _enqueue() {
+            self.mutex.lock()
+            _concurrentTasks += 1
+            resumeOrSuspendIfNeeded(distance: -1)
+            self.mutex.unlock()
+        }
+        func _dequeue() {
+            self.mutex.lock()
+            self._concurrentTasks -= 1
+            resumeOrSuspendIfNeeded(distance: 1)
+            self.mutex.unlock()
+        }
+        func barrier(_ completion: @escaping (T) -> Void) {
+            self.taskQueue.suspend()
+            self.group.notify(queue: processQueue) {
+                task() { result in
+                    self.taskQueue.resume()
+                    completion(result)
+                }
+            }
+        }
+
+        if asBarrier == false {
+            _enqueue()
+            self.group.enter()
+            processQueue.async {
+                task() { result in
+                    _dequeue()
+                    self.group.leave()
+                    completion(result)
+                }
+            }
+        } else {
+            _enqueue()
+            barrier { result in
+                _dequeue()
+                completion(result)
+            }
+        }
+    }
+
+    private func resumeOrSuspendIfNeeded(distance: Int) {
+        let currentAvail = Int(_maxConcurrentTasks) - Int(_concurrentTasks)
+        let formerAvail =  currentAvail - distance
+
+        switch (formerAvail, currentAvail) {
+        case (1...Int.max, Int.min...0):
+            suspend()
+        case (Int.min...0, 1...Int.max):
+            resume()
+        default:
+            break
+        }
     }
 
 }
-
-
