@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		A121391B2089F584008E327F /* TaskQueue.h in Headers */ = {isa = PBXBuildFile; fileRef = A121391A2089F584008E327F /* TaskQueue.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		A134A592257A51AC00CF1CA6 /* UnfairLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A134A590257A51AC00CF1CA6 /* UnfairLock.swift */; };
+		A134A596257A51D800CF1CA6 /* Mutex.swift in Sources */ = {isa = PBXBuildFile; fileRef = A134A595257A51D800CF1CA6 /* Mutex.swift */; };
 		A162A9E11EA0E91600B30D72 /* TaskQueue.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1B4E5D91EA0DE67008B5969 /* TaskQueue.framework */; };
 		A1B4E5E71EA0DE67008B5969 /* TaskQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B4E5E61EA0DE67008B5969 /* TaskQueueTests.swift */; };
 		A1B4E5F01EA0E19A008B5969 /* TaskQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B4E5CE1E9EA34C008B5969 /* TaskQueue.swift */; };
@@ -37,7 +39,8 @@
 
 /* Begin PBXFileReference section */
 		A121391A2089F584008E327F /* TaskQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TaskQueue.h; sourceTree = "<group>"; };
-		A18885DA1F795C140025FF65 /* Example.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Example.playground; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
+		A134A590257A51AC00CF1CA6 /* UnfairLock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnfairLock.swift; sourceTree = "<group>"; };
+		A134A595257A51D800CF1CA6 /* Mutex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mutex.swift; sourceTree = "<group>"; };
 		A1B4E5CE1E9EA34C008B5969 /* TaskQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskQueue.swift; sourceTree = "<group>"; };
 		A1B4E5D91EA0DE67008B5969 /* TaskQueue.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = TaskQueue.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B4E5DC1EA0DE67008B5969 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -68,7 +71,6 @@
 		A1B4E5BB1E9EA2AD008B5969 = {
 			isa = PBXGroup;
 			children = (
-				A18885DA1F795C140025FF65 /* Example.playground */,
 				A1B4E5DA1EA0DE67008B5969 /* Sources */,
 				A1B4E5E51EA0DE67008B5969 /* Tests */,
 				A1B4E5C51E9EA2AD008B5969 /* Products */,
@@ -90,6 +92,8 @@
 				A1B4E5DC1EA0DE67008B5969 /* Info.plist */,
 				A121391A2089F584008E327F /* TaskQueue.h */,
 				A1B4E5CE1E9EA34C008B5969 /* TaskQueue.swift */,
+				A134A590257A51AC00CF1CA6 /* UnfairLock.swift */,
+				A134A595257A51D800CF1CA6 /* Mutex.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -166,12 +170,12 @@
 				TargetAttributes = {
 					A1B4E5D81EA0DE67008B5969 = {
 						CreatedOnToolsVersion = 8.3;
-						LastSwiftMigration = "";
+						LastSwiftMigration = 1220;
 						ProvisioningStyle = Manual;
 					};
 					A1B4E5E01EA0DE67008B5969 = {
 						CreatedOnToolsVersion = 8.3;
-						LastSwiftMigration = "";
+						LastSwiftMigration = 1220;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -181,6 +185,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = A1B4E5BB1E9EA2AD008B5969;
@@ -217,6 +222,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1B4E5F01EA0E19A008B5969 /* TaskQueue.swift in Sources */,
+				A134A596257A51D800CF1CA6 /* Mutex.swift in Sources */,
+				A134A592257A51AC00CF1CA6 /* UnfairLock.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,15 +296,15 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator watchos watchsimulator";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				TVOS_DEPLOYMENT_TARGET = 10.0;
-				WATCHOS_DEPLOYMENT_TARGET = 3.0;
+				TVOS_DEPLOYMENT_TARGET = 10.2;
+				WATCHOS_DEPLOYMENT_TARGET = 3.2;
 			};
 			name = Debug;
 		};
@@ -345,13 +352,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
-				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = "";
 				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator watchos watchsimulator";
-				TVOS_DEPLOYMENT_TARGET = 10.0;
-				WATCHOS_DEPLOYMENT_TARGET = 3.0;
+				TVOS_DEPLOYMENT_TARGET = 10.2;
+				WATCHOS_DEPLOYMENT_TARGET = 3.2;
 			};
 			name = Release;
 		};
@@ -376,7 +383,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -403,7 +410,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -422,7 +429,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -439,7 +446,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
